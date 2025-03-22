@@ -15,6 +15,7 @@ dependencies {
 
     implementation(files("../mathops_commons/out/libs/mathops_commons.jar"))
     implementation(files("../mathops_commons/out/libs/mathops_text.jar"))
+    implementation("com.formdev:flatlaf:3.4")
 }
 
 tasks.test {

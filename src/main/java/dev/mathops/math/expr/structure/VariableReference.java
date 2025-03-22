@@ -80,7 +80,7 @@ public final class VariableReference extends AbstractExpressionNode {
      * @param theVariableName the variable name
      * @throws IllegalArgumentException if the variable name is null or malformed
      */
-    VariableReference(final String theVariableName, final int theFirstIndex, final int theSecondIndex) {
+    public VariableReference(final String theVariableName, final int theFirstIndex, final int theSecondIndex) {
 
         super();
 

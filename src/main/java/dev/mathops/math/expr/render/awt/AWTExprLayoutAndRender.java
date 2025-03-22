@@ -1,10 +1,11 @@
-package dev.mathops.math.expr.render.swing;
+package dev.mathops.math.expr.render.awt;
 
 import dev.mathops.commons.file.FileLoader;
 import dev.mathops.commons.log.Log;
 import dev.mathops.math.expr.layout.ExpressionDisplayContext;
 import dev.mathops.math.expr.layout.ILayoutImpl;
 import dev.mathops.math.expr.layout.VariableReferenceLayout;
+import dev.mathops.math.expr.structure.Expression;
 import dev.mathops.math.expr.structure.VariableReference;
 
 import java.awt.Font;
@@ -112,6 +113,16 @@ public class AWTExprLayoutAndRender implements ILayoutImpl {
      */
     public void layoutVariableReference(final ExpressionDisplayContext context, final VariableReference object,
                                         final VariableReferenceLayout layout) {
+
+    }
+
+    /**
+     * Performs layout for a {@code Expression}.
+     *
+     * @param context the display context
+     * @param expr    the expression to lay out
+     */
+    public void layout(final ExpressionDisplayContext context, final Expression expr) {
 
     }
 }

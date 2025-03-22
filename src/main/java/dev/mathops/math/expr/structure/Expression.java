@@ -18,4 +18,14 @@ public class Expression {
 
     /** The end of the selection range. */
     int selectionRangeEnd;
+
+    /**
+     * Constructs a new {@code Expression}.
+     *
+     * @param theRoot the root node
+     */
+    public Expression(final AbstractExpressionNode theRoot) {
+
+        this.root = theRoot;
+    }
 }
