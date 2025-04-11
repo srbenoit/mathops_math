@@ -6,14 +6,14 @@ package dev.mathops.math.expr.layout;
 public class SimpleBounds {
 
     /** The minimum x coordinate. */
-    double minX;
+    public double minX;
 
     /** The minimum y coordinate. */
-    double minY;
+    public double minY;
 
     /** The maximum x coordinate. */
-    double maxX;
+    public double maxX;
 
     /** The maximum y coordinate. */
-    double maxY;
+    public double maxY;
 }

@@ -1,6 +1,7 @@
 package dev.mathops.math.expr.structure;
 
 import dev.mathops.commons.CoreConstants;
+import dev.mathops.math.expr.layout.Bounds;
 import dev.mathops.math.expr.layout.ExpressionDisplayContext;
 import dev.mathops.math.expr.layout.ILayoutImpl;
 import dev.mathops.math.expr.layout.VariableReferenceLayout;
@@ -254,7 +255,7 @@ public final class VariableReference extends AbstractExpressionNode {
      *
      * @return the pre-superscript; an empty string if none
      */
-    public String preSuperscript() {
+    public String getPreSuperscript() {
 
         return this.preSuperscript;
     }
@@ -375,7 +376,7 @@ public final class VariableReference extends AbstractExpressionNode {
      *
      * @return the number of tokens
      */
-    int getNumTokens() {
+    public int getNumTokens() {
 
         int count = this.preSuperscript.length() + this.preSubscript.length() + this.name.length() +
                     this.superscript.length() + this.subscript.length();
@@ -415,5 +416,15 @@ public final class VariableReference extends AbstractExpressionNode {
         }
 
         impl.layoutVariableReference(context, this, this.layout);
+    }
+
+    /**
+     * Gets the overall bounds of the node.
+     *
+     * @return the bounds; {@code null} if the node has not been laid out
+     */
+    public Bounds getBounds() {
+
+        return this.layout == null ? null : this.layout.overallBounds;
     }
 }

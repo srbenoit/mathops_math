@@ -3,41 +3,60 @@ package dev.mathops.math.expr.layout;
 /**
  * All layout information needed for a {@code VariableReference} object.
  */
-public class VariableReferenceLayout {
-
-    /** The overall bounds for the construction. */
-    Bounds overallBounds;
+public final class VariableReferenceLayout {
 
     /** The bounds for the variable name. */
-    Bounds variableNameBounds;
+    public final Bounds overallBounds;
+
+    /** The bounds for the variable name. */
+    public final Bounds variableNameBounds;
 
     /** The bounds for the accent above the variable name. */
-    SimpleBounds accentBounds;
+    public final SimpleBounds accentBounds;
 
     /** The bounds for the pre-superscript. */
-    Bounds preSuperscriptBounds;
+    public final Bounds preSuperscriptBounds;
 
     /** The bounds for the pre-subscript. */
-    Bounds preSubscriptBounds;
+    public final Bounds preSubscriptBounds;
 
     /** The bounds for the superscript. */
-    Bounds superscriptBounds;
+    public final Bounds superscriptBounds;
 
     /** The bounds for the subscript. */
-    Bounds subscriptBounds;
+    public final Bounds subscriptBounds;
 
     /** The bounds for the opening bracket for indexes. */
-    Bounds openingBracketBounds;
+    public final Bounds openingBracketBounds;
 
     /** The bounds for the first index. */
-    Bounds index1Bounds;
+    public final Bounds index1Bounds;
 
     /** The bounds for the comma between indexes. */
-    Bounds indexCommaBounds;
+    public final Bounds indexCommaBounds;
 
     /** The bounds for the second index. */
-    Bounds index2Bounds;
+    public final Bounds index2Bounds;
 
     /** The bounds for the closing bracket for indexes. */
-    Bounds closingBracketBounds;
+    public final Bounds closingBracketBounds;
+
+    /**
+     * Constructs a new {@code VariableReferenceLayout};
+     */
+    public VariableReferenceLayout() {
+
+        this.overallBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.variableNameBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.accentBounds = new SimpleBounds();
+        this.preSuperscriptBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.preSubscriptBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.superscriptBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.subscriptBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.openingBracketBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.index1Bounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.indexCommaBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.index2Bounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+        this.closingBracketBounds = new Bounds(EVerticalAlignment.TEXT_BASELINE);
+    }
 }

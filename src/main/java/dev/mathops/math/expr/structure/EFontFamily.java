@@ -15,5 +15,8 @@ public enum EFontFamily {
     SCRIPT,
 
     /** Calligraphic. */
-    CALLIGRAPHIC;
+    CALLIGRAPHIC,
+
+    /** Fraktur. */
+    FRAKTUR,
 }

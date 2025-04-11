@@ -28,4 +28,45 @@ public class Expression {
 
         this.root = theRoot;
     }
+
+    /**
+     * Gets the root node of the expression tree.
+     *
+     * @return the root node
+     */
+    public AbstractExpressionNode getRoot() {
+
+        return this.root;
+    }
+
+    /**
+     * Gets the current cursor position.
+     *
+     * @return the cursor position
+     */
+    public int getCursorPosition() {
+
+        return this.cursorPosition;
+    }
+
+    /**
+     * Gets the start of the selection range.
+     *
+     * @return the start position of the selection range
+     */
+    public int getSelectionRangeStart() {
+
+        return this.selectionRangeStart;
+    }
+
+    /**
+     * Gets the end of the selection range.
+     *
+     * @return the end position of the selection range
+     */
+    public int getSelectionRangeEnd() {
+
+        return this.selectionRangeEnd;
+    }
+
 }

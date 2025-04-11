@@ -8,39 +8,43 @@ import java.awt.Color;
 public final class ExpressionDisplayContext {
 
     /** The base font size. */
-    double fontSize;
+    public double fontSize;
+
+    /** The minimum font size. */
+    public double minFontSize;
 
     /** The shape weight. */
-    double shapeWeight;
+    public double shapeWeight;
 
     /** The symbol color. */
-    Color symbolColor;
+    public Color symbolColor;
 
     /** The shape color. */
-    Color shapeColor;
+    public Color shapeColor;
 
     /** The cursor color. */
-    Color cursorColor;
+    public Color cursorColor;
 
     /** The cursor width. */
-    double cursorWidth;
+    public double cursorWidth;
 
     /** The error decoration style. */
-    EExpressionErrorDecoration errorDecorations;
+    public EExpressionErrorDecoration errorDecorations;
 
-    /** The shape weight. */
-    int currentScriptLevel = 0;
+    /** The current script level (0 for top-level constructions). */
+    public int currentScriptLevel = 0;
 
     /**
      * Constructs a new {@code ExpressionDisplayContext}.
      *
      * @param theFontSize the font size
      */
-    public ExpressionDisplayContext(final double theFontSize) {
+    public ExpressionDisplayContext(final float theFontSize) {
 
         this.fontSize = theFontSize;
 
         this.shapeWeight = theFontSize / 20.0;
+        this.minFontSize = 8.0;
         this.symbolColor = Color.BLACK;
         this.shapeColor = Color.BLACK;
         this.cursorColor = Color.BLUE;
