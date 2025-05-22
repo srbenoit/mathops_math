@@ -11,7 +11,8 @@ import java.math.BigInteger;
  * include {code Long}, {code Double}, {code Rational}, {code BigRational}, {code BigInteger}, and {code BigDecimal}.
  * Any other types passed will be treated as double.
  */
-public class Multiply extends NumberUtils {
+public enum Multiply {
+    ;
 
     /**
      * Multiplies two numbers without risk of overflow.
@@ -24,11 +25,11 @@ public class Multiply extends NumberUtils {
 
         final Number result;
 
-        if (isZero(factor1) || isZero(factor2)) {
+        if (NumberUtils.isZero(factor1) || NumberUtils.isZero(factor2)) {
             result = Long.valueOf(0L);
-        } else if (isOne(factor1)) {
+        } else if (NumberUtils.isOne(factor1)) {
             result = factor2;
-        } else if (isOne(factor2)) {
+        } else if (NumberUtils.isOne(factor2)) {
             result = factor1;
         } else if (factor1 instanceof final Long l1) {
             result = longTimesNumber(l1, factor2);
@@ -99,7 +100,7 @@ public class Multiply extends NumberUtils {
         } else if (factor2 instanceof final BigInteger bi2) {
             result = rationalTimesBigInteger(factor1, bi2);
         } else if (factor2 instanceof final BigDecimal bd2) {
-            final BigRational bigRat = bigDecimalToBigRational(bd2);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(bd2);
             result = rationalTimesBigRational(factor1, bigRat);
         } else {
             final double d1 = factor1.doubleValue();
@@ -130,7 +131,7 @@ public class Multiply extends NumberUtils {
         } else if (factor2 instanceof final BigInteger bi2) {
             result = bigRationalTimesBigInteger(factor1, bi2);
         } else if (factor2 instanceof final BigDecimal bd2) {
-            final BigRational bigRat = bigDecimalToBigRational(bd2);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(bd2);
             result = bigRationalTimesBigRational(factor1, bigRat);
         } else {
             final double d1 = factor1.doubleValue();
@@ -185,10 +186,10 @@ public class Multiply extends NumberUtils {
         if (factor2 instanceof final Long l2) {
             result = longTimesBigDecimal(l2, factor1);
         } else if (factor2 instanceof final Rational r2) {
-            final BigRational bigRat = bigDecimalToBigRational(factor1);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(factor1);
             result = rationalTimesBigRational(r2, bigRat);
         } else if (factor2 instanceof final BigRational br2) {
-            final BigRational bigRat = bigDecimalToBigRational(factor1);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(factor1);
             result = bigRationalTimesBigRational(br2, bigRat);
         } else if (factor2 instanceof final BigInteger bi2) {
             result = bigIntegerTimesBigDecimal(bi2, factor1);
@@ -202,7 +203,6 @@ public class Multiply extends NumberUtils {
 
         return result;
     }
-
 
     /**
      * Computes the product of two {code Long} factors, without risk of overflow.
@@ -246,12 +246,12 @@ public class Multiply extends NumberUtils {
 
         try {
             final long newNumer = Math.multiplyExact(l1, numer);
-            result = simplifyRational(new Rational(newNumer, denom));
+            result = NumberUtils.simplifyRational(new Rational(newNumer, denom));
         } catch (final ArithmeticException ex) {
             final BigInteger val = BigInteger.valueOf(numer);
             final BigInteger bigNumer = BigInteger.valueOf(l1).multiply(val);
             final BigInteger bigDenom = BigInteger.valueOf(denom);
-            result = simplifyBigRational(new BigRational(bigNumer, bigDenom));
+            result = NumberUtils.simplifyBigRational(new BigRational(bigNumer, bigDenom));
         }
 
         return result;
@@ -272,7 +272,7 @@ public class Multiply extends NumberUtils {
         final BigInteger newNumer = bigFactor1.multiply(numer);
         final BigRational bigResult = new BigRational(newNumer, factor2.denominator);
 
-        return simplifyBigRational(bigResult);
+        return NumberUtils.simplifyBigRational(bigResult);
     }
 
     /**
@@ -393,7 +393,6 @@ public class Multiply extends NumberUtils {
         return NumberUtils.simplifyBigRational(bigResult);
     }
 
-
     /**
      * Computes the product of a {code BigRational}  and a {code BigInteger} factor, without risk of overflow.
      *
@@ -409,7 +408,6 @@ public class Multiply extends NumberUtils {
         return NumberUtils.simplifyBigRational(bigResult);
     }
 
-
     /**
      * Computes the product of a {code BigInteger} and a {code BigInteger} factor, without risk of overflow.
      *
@@ -423,7 +421,6 @@ public class Multiply extends NumberUtils {
 
         return NumberUtils.simplifyBigInteger(big1);
     }
-
 
     /**
      * Computes the product of a {code BigInteger} and a {code BigDecimal} factor, without risk of overflow.
@@ -439,7 +436,6 @@ public class Multiply extends NumberUtils {
 
         return NumberUtils.simplifyBigDecimal(bigResult);
     }
-
 
     /**
      * Computes the product of two {code BigDecimal} factors, without risk of overflow.

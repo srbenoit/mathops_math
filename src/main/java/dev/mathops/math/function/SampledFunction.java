@@ -140,7 +140,8 @@ public class SampledFunction extends AbstractFunction implements IPdfFunction {
         for (int i = 0; i < numInputs; ++i) {
             final RealInterval dom = getDomain(i);
             clampedToDomain[i] = IFunction.clampToRange(arguments[i], dom.lowerBound, dom.upperBound);
-            scaled[i] = (double) this.samplesPerInput[i] * (clampedToDomain[i] - dom.lowerBound) / dom.extent();
+            scaled[i] = (double) this.samplesPerInput[i] * (clampedToDomain[i] - dom.lowerBound.doubleValue())
+                        / (dom.upperBound.doubleValue() - dom.lowerBound.doubleValue());
         }
 
         final double result = Interpolator.interpolate(this.samplesPerInput, this.samples, scaled, this.order);

@@ -62,11 +62,11 @@ public interface IFunction {
      * @param max   the maximum clamped value
      * @return the clamped value
      */
-    static double clampToRange(final double value, final double min, final double max) {
+    static double clampToRange(final double value, final Number min, final Number max) {
 
-        final double boundedAbove = Math.min(value, max);
+        final double boundedAbove = Math.min(value, max.doubleValue());
 
-        return Math.max(min, boundedAbove);
+        return Math.max(min.doubleValue(), boundedAbove);
     }
 
     /**

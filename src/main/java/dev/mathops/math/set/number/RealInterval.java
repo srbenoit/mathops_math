@@ -1,11 +1,13 @@
 package dev.mathops.math.set.number;
 
+import dev.mathops.commons.number.NumberParser;
+import dev.mathops.math.NumberComparator;
 import dev.mathops.math.geom.GeomConstants;
 
 /**
  * An interval on the real line. An empty interval can be represented by making the lower bound greater than the upper.
  */
-public class RealInterval {
+public class RealInterval extends AbstractRealNumberSet {
 
     /** The unit interval from 0.0 to 1.0, which is commonly used. */
     public static final RealInterval UNIT_INTERVAL = new RealInterval(0, 1);
@@ -14,10 +16,10 @@ public class RealInterval {
     public static final RealInterval EMPTY_INTERVAL = new RealInterval(1, 0);
 
     /** The lower bound. */
-    public final double lowerBound;
+    public final Number lowerBound;
 
     /** The upper bound. */
-    public final double upperBound;
+    public final Number upperBound;
 
     /**
      * Constructs a new {@code RealInterval}.
@@ -25,7 +27,7 @@ public class RealInterval {
      * @param theLowerBound the lower bound
      * @param theUpperBound the upper bound
      */
-    public RealInterval(final double theLowerBound, final double theUpperBound) {
+    public RealInterval(final Number theLowerBound, final Number theUpperBound) {
 
         this.lowerBound = theLowerBound;
         this.upperBound = theUpperBound;
@@ -42,7 +44,7 @@ public class RealInterval {
      * @throws NumberFormatException    if the x or y coordinate is not in a valid format
      * @throws IllegalArgumentException if the string cannot be parsed
      */
-    public static RealInterval parse(final String str) throws IllegalArgumentException, NumberFormatException {
+    public static RealInterval parse(final String str) {
 
         final String trimmed = str.trim();
         final int len = trimmed.length();
@@ -51,18 +53,18 @@ public class RealInterval {
         final int last = (int) trimmed.charAt(len - 1);
 
         if (first == '(' && last == ')') {
-            int index = trimmed.indexOf(GeomConstants.COMMA);
+            final int index = trimmed.indexOf(GeomConstants.COMMA);
             if (index == -1) {
                 throw makeBadIntervalStringException(str);
             }
 
             final String xStr = trimmed.substring(1, index);
             final String xTrimmed = xStr.trim();
-            final double x = Double.parseDouble(xTrimmed);
+            final Number x = NumberParser.parse(xTrimmed);
 
             final String yStr = trimmed.substring(index + 1, len - 1);
             final String yTrimmed = yStr.trim();
-            final double y = Double.parseDouble(yTrimmed);
+            final Number y = NumberParser.parse(yTrimmed);
 
             return new RealInterval(x, y);
         } else {
@@ -92,27 +94,26 @@ public class RealInterval {
 
         final RealInterval result;
 
-        if (this.upperBound < other.lowerBound || this.lowerBound > other.upperBound) {
+        final int below = NumberComparator.INSTANCE.compare(this.upperBound, other.lowerBound);
+
+        if (below < 0) {
             result = null;
         } else {
-            final double maxLower = Math.max(this.lowerBound, other.lowerBound);
-            final double minUpper = Math.min(this.upperBound, other.upperBound);
-            result = new RealInterval(maxLower, minUpper);
+            final int above = NumberComparator.INSTANCE.compare(this.lowerBound, other.upperBound);
+            if (above > 0) {
+                result = null;
+            } else {
+                final int compareLower = NumberComparator.INSTANCE.compare(this.lowerBound, other.lowerBound);
+                final Number maxLower = compareLower > 0 ? this.lowerBound : other.lowerBound;
+
+                final int compareUpper = NumberComparator.INSTANCE.compare(this.upperBound, other.upperBound);
+                final Number minUpper = compareUpper < 0 ? this.upperBound : other.upperBound;
+
+                result = new RealInterval(maxLower, minUpper);
+            }
         }
 
         return result;
-
-    }
-
-    /**
-     * Gets the extent of the interval, which is the upper bound minus the lower bound, or 0 if these bounds are equal
-     * or the upper is less than the lower.
-     *
-     * @return the extent
-     */
-    public final double extent() {
-
-        return this.upperBound < this.lowerBound ? 0.0 : this.upperBound - this.lowerBound;
     }
 
     /**
@@ -122,51 +123,9 @@ public class RealInterval {
      */
     public final boolean isEmpty() {
 
-        return this.upperBound < this.lowerBound;
-    }
+        final int compare = NumberComparator.INSTANCE.compare(this.lowerBound, this.upperBound);
 
-    /**
-     * Tests whether a point is contained in this interval.
-     *
-     * @param x the point to test
-     * @return true if the point lies in this interval (or at an endpoint); false if not
-     */
-    public final boolean contains(final double x) {
-
-        return x >= this.lowerBound && x <= this.upperBound;
-    }
-
-    /**
-     * Tests whether an interval is contained in this interval.
-     *
-     * @param x the interval to test
-     * @return true if the test interval falls entirely within this interval; false if not (an empty interval is not
-     *         considered to be "contained" in any interval)
-     */
-    public final boolean contains(final RealInterval x) {
-
-        final boolean result;
-
-        if (isEmpty() || x.isEmpty()) {
-            result = false;
-        } else {
-            result = x.lowerBound >= this.lowerBound && x.upperBound <= this.upperBound;
-        }
-
-        return result;
-    }
-
-    /**
-     * Clamps a value to this domain.
-     *
-     * @param value the value to clamp
-     * @return the nearest value in this domain to {code value} (if the input value is NaN, the output is NaN)
-     */
-    public final double clamp(final double value) {
-
-        final double result;
-
-        return Double.isNaN(value) ? value : Math.max(this.lowerBound, Math.min(value, this.upperBound));
+        return compare < 0;
     }
 
     /**
@@ -177,6 +136,48 @@ public class RealInterval {
     @Override
     public final String toString() {
 
-        return "(" + (float) this.lowerBound + ", " + (float) this.upperBound + ')';
+        return "(" + this.lowerBound + ", " + this.upperBound + ")";
+    }
+
+    /**
+     * Tests whether the set contains a number.
+     *
+     * @param number the number
+     * @return {@code true} if the set contains the number; {@code false} if not
+     */
+    public boolean contains(final Number number) {
+
+        boolean result;
+
+        final int vsLower = NumberComparator.INSTANCE.compare(number, this.lowerBound);
+        if (vsLower < 0) {
+            // Number is less than lower bound
+            result = false;
+        } else {
+            final int vsUpper = NumberComparator.INSTANCE.compare(number, this.lowerBound);
+            result = vsUpper <= 0;
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns the lower bound for the set.
+     *
+     * @return the lower bound ({@code Double.NEGATIVE_INFINITY} if not bounded below)
+     */
+    public Number lowerBound() {
+
+        return this.lowerBound;
+    }
+
+    /**
+     * Returns the upper bound for the set.
+     *
+     * @return the upper bound ({@code Double.POSITIVE_INFINITY} if not bounded above)
+     */
+    public Number upperBound() {
+
+        return this.upperBound;
     }
 }

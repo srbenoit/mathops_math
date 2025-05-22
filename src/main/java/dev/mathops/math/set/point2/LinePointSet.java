@@ -72,7 +72,8 @@ public class LinePointSet extends AbstractPlaneCurve {
 
         final Tuple2D result;
 
-        if (segmentIndex != 0 || (param < (this.domain.lowerBound - EPSILON) || param > (this.domain.upperBound + EPSILON))) {
+        if (segmentIndex != 0 || (param < (this.domain.lowerBound.doubleValue() - EPSILON)
+                                  || param > (this.domain.upperBound.doubleValue() + EPSILON))) {
             result = null;
         } else {
             final double x = this.p1.x + param * (this.p2.x - this.p1.x);

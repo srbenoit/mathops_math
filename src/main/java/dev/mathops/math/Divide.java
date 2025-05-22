@@ -11,7 +11,8 @@ import java.math.BigInteger;
  * include {code Long}, {code Double}, {code Rational}, {code BigRational}, {code BigInteger}, and {code BigDecimal}.
  * Any other types passed will be treated as double.
  */
-public class Divide extends NumberUtils {
+public enum Divide {
+    ;
 
     /**
      * Divides two numbers without risk of overflow.
@@ -24,11 +25,11 @@ public class Divide extends NumberUtils {
 
         final Number result;
 
-        if (isZero(divisor)) {
+        if (NumberUtils.isZero(divisor)) {
             result = Double.valueOf(Double.NaN);
-        } else if (isZero(dividend)) {
+        } else if (NumberUtils.isZero(dividend)) {
             result = Long.valueOf(0L);
-        } else if (isOne(divisor)) {
+        } else if (NumberUtils.isOne(divisor)) {
             result = dividend;
         } else if (dividend instanceof final Long l1) {
             result = longDivNumber(l1, divisor);
@@ -196,7 +197,7 @@ public class Divide extends NumberUtils {
 
         final long l1 = dividend.longValue();
         final long l2 = divisor.longValue();
-        return simplifyRational(new Rational(l1, l2));
+        return NumberUtils.simplifyRational(new Rational(l1, l2));
     }
 
     /**
@@ -211,7 +212,7 @@ public class Divide extends NumberUtils {
         final long val = dividend.longValue();
         final BigInteger bi1 = BigInteger.valueOf(val);
 
-        return simplifyBigRational(new BigRational(bi1, divisor));
+        return NumberUtils.simplifyBigRational(new BigRational(bi1, divisor));
     }
 
     /**
@@ -301,7 +302,7 @@ public class Divide extends NumberUtils {
         final long val = divisor.longValue();
         final BigInteger bi2 = BigInteger.valueOf(val);
 
-        return simplifyBigRational(new BigRational(dividend, bi2));
+        return NumberUtils.simplifyBigRational(new BigRational(dividend, bi2));
     }
 
     /**
@@ -313,6 +314,6 @@ public class Divide extends NumberUtils {
      */
     public static Number bigIntegerDivBigInteger(final BigInteger dividend, final BigInteger divisor) {
 
-        return simplifyBigRational(new BigRational(dividend, divisor));
+        return NumberUtils.simplifyBigRational(new BigRational(dividend, divisor));
     }
 }

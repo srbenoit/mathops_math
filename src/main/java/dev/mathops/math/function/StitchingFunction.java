@@ -155,16 +155,17 @@ public class StitchingFunction extends AbstractFunction implements IPdfFunction 
             if (i == numFunctions - 1) {
                 whichFunction = i;
                 lowerBound = this.bounds[numFunctions - 1];
-                upperBound = domain.upperBound;
+                upperBound = domain.upperBound.doubleValue();
             } else if (x < this.bounds[i]) {
                 whichFunction = i;
-                lowerBound = i == 0 ? domain.lowerBound : this.bounds[i - 1];
+                lowerBound = i == 0 ? domain.lowerBound.doubleValue() : this.bounds[i - 1];
                 upperBound = this.bounds[i];
             }
         }
 
         final RealInterval enc = this.encode[whichFunction];
-        final double encoded = IFunction.interpolate(x, lowerBound, upperBound, enc.lowerBound, enc.upperBound);
+        final double encoded = IFunction.interpolate(x, lowerBound, upperBound, enc.lowerBound.doubleValue(),
+                enc.upperBound.doubleValue());
 
         return this.functions[whichFunction].evaluate(encoded);
     }

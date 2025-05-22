@@ -87,7 +87,8 @@ public class ParametricPointSet extends AbstractPlaneCurve {
         final Tuple2D result;
 
         if (segmentIndex != 0 ||
-                (param < (this.domain.lowerBound - EPSILON) || param > (this.domain.upperBound + EPSILON))) {
+            (param < (this.domain.lowerBound.doubleValue() - EPSILON)
+             || param > (this.domain.upperBound.doubleValue() + EPSILON))) {
             result = null;
         } else {
             final double[] x = this.xFxn.evaluate(param);

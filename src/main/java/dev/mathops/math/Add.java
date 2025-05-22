@@ -28,7 +28,8 @@ import java.math.BigInteger;
  * include {@code Long}, {@code BigInteger}, {@code Double}, {@code BigDecimal}, {@code Rational}, {@code BigRational},
  * {@code Irrational}, and {@code BigIrrational}. Any other types passed will be treated as double.
  */
-public class Add extends NumberUtils {
+public enum Add {
+    ;
 
     /**
      * Adds two numbers without risk of overflow.
@@ -41,9 +42,9 @@ public class Add extends NumberUtils {
 
         final Number result;
 
-        if (isZero(term1)) {
+        if (NumberUtils.isZero(term1)) {
             result = term2;
-        } else if (isZero(term2)) {
+        } else if (NumberUtils.isZero(term2)) {
             result = term1;
         } else if (term1 instanceof final Long l1) {
             result = longPlusNumber(l1, term2);
@@ -116,7 +117,7 @@ public class Add extends NumberUtils {
         } else if (term2 instanceof final BigInteger bi2) {
             result = rationalPlusBigInteger(term1, bi2);
         } else if (term2 instanceof final BigDecimal bd2) {
-            final BigRational bigRat = bigDecimalToBigRational(bd2);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(bd2);
             result = rationalPlusBigRational(term1, bigRat);
         } else {
             final double d1 = term1.doubleValue();
@@ -147,7 +148,7 @@ public class Add extends NumberUtils {
         } else if (term2 instanceof final BigInteger bi2) {
             result = bigRationalPlusBigInteger(term1, bi2);
         } else if (term2 instanceof final BigDecimal bd2) {
-            final BigRational bigRat = bigDecimalToBigRational(bd2);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(bd2);
             result = bigRationalPlusBigRational(term1, bigRat);
         } else {
             final double d1 = term1.doubleValue();
@@ -177,7 +178,7 @@ public class Add extends NumberUtils {
             result = bigRationalPlusBigInteger(br2, term1);
         } else if (term2 instanceof final BigInteger bi2) {
             final BigInteger sum = term1.add(bi2);
-            result = simplifyBigInteger(sum);
+            result = NumberUtils.simplifyBigInteger(sum);
         } else if (term2 instanceof final BigDecimal bd2) {
             result = bigIntegerPlusBigDecimal(term1, bd2);
         } else {
@@ -203,16 +204,16 @@ public class Add extends NumberUtils {
         if (term2 instanceof final Long l2) {
             result = longPlusBigDecimal(l2, term1);
         } else if (term2 instanceof final Rational r2) {
-            final BigRational bigRat = bigDecimalToBigRational(term1);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(term1);
             result = rationalPlusBigRational(r2, bigRat);
         } else if (term2 instanceof final BigRational br2) {
-            final BigRational bigRat = bigDecimalToBigRational(term1);
+            final BigRational bigRat = NumberUtils.bigDecimalToBigRational(term1);
             result = bigRationalPlusBigRational(br2, bigRat);
         } else if (term2 instanceof final BigInteger bi2) {
             result = bigIntegerPlusBigDecimal(bi2, term1);
         } else if (term2 instanceof final BigDecimal bd2) {
             final BigDecimal sum = term1.add(bd2);
-            result = simplifyBigDecimal(sum);
+            result = NumberUtils.simplifyBigDecimal(sum);
         } else {
             final double d1 = term1.doubleValue();
             final double d2 = term2.doubleValue();
@@ -278,7 +279,7 @@ public class Add extends NumberUtils {
         final BigInteger ad = a.multiply(term2.denominator);
         final BigInteger newNumer = ad.add(term2.numerator);
 
-        return simplifyBigRational(new BigRational(newNumer, term2.denominator));
+        return NumberUtils.simplifyBigRational(new BigRational(newNumer, term2.denominator));
     }
 
     /**
@@ -306,7 +307,7 @@ public class Add extends NumberUtils {
         final long l1 = term1.longValue();
         final BigDecimal big1 = BigDecimal.valueOf(l1);
         final BigDecimal sum = big1.add(term2);
-        return simplifyBigDecimal(sum);
+        return NumberUtils.simplifyBigDecimal(sum);
     }
 
     /**
@@ -328,7 +329,7 @@ public class Add extends NumberUtils {
             final long bd = Math.multiplyExact(term1.denominator, term2.denominator);
             final long adPlusBc = Math.addExact(ad, bc);
 
-            result = simplifyRational(new Rational(adPlusBc, bd));
+            result = NumberUtils.simplifyRational(new Rational(adPlusBc, bd));
         } catch (final ArithmeticException ex) {
             final BigInteger n1 = BigInteger.valueOf(term1.numerator);
             final BigInteger d1 = BigInteger.valueOf(term1.denominator);
@@ -340,7 +341,7 @@ public class Add extends NumberUtils {
             final BigInteger d1d2 = d1.multiply(d2);
             final BigInteger newNumer = n1d2.add(d1n2);
 
-            result = simplifyBigRational(new BigRational(newNumer, d1d2));
+            result = NumberUtils.simplifyBigRational(new BigRational(newNumer, d1d2));
         }
 
         return result;
@@ -365,7 +366,7 @@ public class Add extends NumberUtils {
         final BigInteger d1d2 = d1.multiply(term2.denominator);
         final BigInteger newNumer = n1d2.add(d1n2);
 
-        return simplifyBigRational(new BigRational(newNumer, d1d2));
+        return NumberUtils.simplifyBigRational(new BigRational(newNumer, d1d2));
     }
 
     /**
@@ -385,7 +386,7 @@ public class Add extends NumberUtils {
         final BigInteger bc = d1.multiply(term2);
         final BigInteger newNumer = n1.add(bc);
 
-        return simplifyBigRational(new BigRational(newNumer, d1));
+        return NumberUtils.simplifyBigRational(new BigRational(newNumer, d1));
     }
 
     /**
@@ -404,7 +405,7 @@ public class Add extends NumberUtils {
         final BigInteger d1d2 = term1.denominator.multiply(term2.denominator);
         final BigInteger newNumer = n1d2.add(d1n2);
 
-        return simplifyBigRational(new BigRational(newNumer, d1d2));
+        return NumberUtils.simplifyBigRational(new BigRational(newNumer, d1d2));
     }
 
     /**
@@ -421,7 +422,7 @@ public class Add extends NumberUtils {
         final BigInteger d1n2 = term1.denominator.multiply(term2);
         final BigInteger newNumer = term1.numerator.add(term1.denominator);
 
-        return simplifyBigRational(new BigRational(newNumer, term1.denominator));
+        return NumberUtils.simplifyBigRational(new BigRational(newNumer, term1.denominator));
     }
 
     /**
@@ -435,6 +436,6 @@ public class Add extends NumberUtils {
 
         final BigDecimal sum = new BigDecimal(term1).add(term2);
 
-        return simplifyBigDecimal(sum);
+        return NumberUtils.simplifyBigDecimal(sum);
     }
 }

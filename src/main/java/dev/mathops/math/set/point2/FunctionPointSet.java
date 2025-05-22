@@ -62,7 +62,8 @@ public class FunctionPointSet extends AbstractPlaneCurve {
 
         final Tuple2D result;
 
-        if (segmentIndex != 0 || (param < (domain.lowerBound - EPSILON) || param > (domain.upperBound + EPSILON))) {
+        if (segmentIndex != 0 || (param < (domain.lowerBound.doubleValue() - EPSILON)
+                                  || param > (domain.upperBound.doubleValue() + EPSILON))) {
             result = null;
         } else {
             result = this.fxn.evaluate(param);
