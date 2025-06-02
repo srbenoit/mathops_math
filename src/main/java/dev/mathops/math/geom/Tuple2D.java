@@ -31,7 +31,7 @@ public final class Tuple2D {
      * @param theType the tuple's type
      * @throws IllegalArgumentException if either coordinate is not finite, or the type is null
      */
-    public Tuple2D(final double theX, final double theY, final ETupleType theType) throws IllegalArgumentException {
+    public Tuple2D(final double theX, final double theY, final ETupleType theType) {
 
         if (theType == null) {
             final String msg = Res.get(Res.NULL_TUPLE_TYPE);
