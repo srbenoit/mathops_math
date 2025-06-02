@@ -1,5 +1,8 @@
 package dev.mathops.math.linalg;
 
+import dev.mathops.text.builder.HtmlBuilder;
+import org.w3c.dom.html.HTMLDListElement;
+
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -256,10 +259,27 @@ public class SquareMatrix {
     /**
      * Tests whether this matrix is the identity matrix.
      *
-     * @return true if the identity matrix
+     * @param epsilon the maximum amount by which wny martix element can very from the exact value (1.0 or 0.0) and
+     *                still be considered an identity matrix
+     * @return true if this object is the identity matrix, within the specified epsilon
      */
-    public final boolean isIdentity() {
+    public final boolean isIdentity(final double epsilon) {
 
+        boolean result = true;
+
+        final int mN = n();
+        for (int r = 0; r < mN; ++r) {
+            for (int c = 0; c < mN; ++c) {
+                final double expect = r == c ? 1.0 : 0.0;
+                final double diff = this.m[r][c] - expect;
+                if (Math.abs(diff) > epsilon) {
+                    result = false;
+                    break;
+                }
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -269,6 +289,27 @@ public class SquareMatrix {
      */
     public final double determinant() {
 
+        final int mN = n();
+
+        double result;
+
+        if (mN == 1) {
+            result = this.m[0][0];
+        } else if (mN == 2) {
+            result = this.m[0][0] * this.m[1][1] - this.m[0][1] * this.m[1][0];
+        } else if (mN == 3) {
+            result = this.m[0][0] * this.m[1][1] * this.m[2][2]
+                     + this.m[0][1] * this.m[1][2] * this.m[2][0]
+                     + this.m[0][2] * this.m[1][0] * this.m[2][1]
+                     - this.m[0][2] * this.m[1][1] * this.m[2][0]
+                     - this.m[0][1] * this.m[1][0] * this.m[2][2]
+                     - this.m[0][0] * this.m[1][2] * this.m[2][1];
+        } else {
+            // FIXME
+            throw new UnsupportedOperationException("Determinant of matrices larger than 3x3 not yet implemented");
+        }
+
+        return result;
     }
 
     /**
@@ -278,6 +319,16 @@ public class SquareMatrix {
      */
     public final SquareMatrix transpose() {
 
+        final int mN = n();
+        final SquareMatrix result = new SquareMatrix(mN);
+
+        for (int r = 0; r < mN; ++r) {
+            for (int c = 0; c < mN; ++c) {
+                result.set(r, c, this.m[c][r]);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -287,6 +338,8 @@ public class SquareMatrix {
      */
     public final Optional<SquareMatrix> inverse() {
 
+        // FIXME
+        throw new UnsupportedOperationException("Matrix inverse not yet implemented");
     }
 
     /**
@@ -348,5 +401,23 @@ public class SquareMatrix {
      */
     public String toString() {
 
+        final int mN = n();
+
+        final HtmlBuilder builder = new HtmlBuilder(20 * mN * mN);
+
+        builder.add('[');
+        for (int r = 0; r < mN; ++r) {
+            builder.add('[');
+            for (int c = 0; c < mN; ++c) {
+                if (c > 0) {
+                    builder.add(", ");
+                }
+                builder.add(Double.toString(this.m[r][c]));
+            }
+            builder.addln(']');
+        }
+        builder.addln(']');
+
+        return builder.toString();
     }
 }
