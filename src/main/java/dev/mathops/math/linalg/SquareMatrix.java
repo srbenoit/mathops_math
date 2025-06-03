@@ -1,7 +1,6 @@
 package dev.mathops.math.linalg;
 
 import dev.mathops.text.builder.HtmlBuilder;
-import org.w3c.dom.html.HTMLDListElement;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -195,7 +194,7 @@ public class SquareMatrix {
 
             return result;
         } else {
-            throw new IllegalArgumentException("Matrix entries must be finite.");
+            throw new IllegalArgumentException("Matrices being added must be the same size.");
         }
     }
 
@@ -217,7 +216,38 @@ public class SquareMatrix {
                 }
             }
         } else {
-            throw new IllegalArgumentException("Matrix entries must be finite.");
+            throw new IllegalArgumentException("Matrices being added must be the same size.");
+        }
+    }
+
+    /**
+     * Returns the product of this matrix (on the left)  and another (on the right).
+     *
+     * @param other the matrix to add to this matrix (must be the same size as this matrix)
+     * @return the constructed sum
+     * @throws IllegalArgumentException if {@code other} is not the same size as this matrix
+     */
+    public final SquareMatrix product(final SquareMatrix other) {
+
+        final int mN = n();
+        final int oN = other.n();
+
+        if (mN == oN) {
+            final SquareMatrix result = new SquareMatrix(mN);
+
+            for (int r = 0; r < mN; ++r) {
+                for (int c = 0; c < mN; ++c) {
+                    double accum = 0.0;
+                    for (int i = 0; i < mN; ++i) {
+                        accum += this.m[r][i] * other.get(i, c);
+                    }
+                    result.set(r, c, accum);
+                }
+            }
+
+            return result;
+        } else {
+            throw new IllegalArgumentException("Matrices being multiplied must be the same size.");
         }
     }
 
@@ -305,8 +335,59 @@ public class SquareMatrix {
                      - this.m[0][1] * this.m[1][0] * this.m[2][2]
                      - this.m[0][0] * this.m[1][2] * this.m[2][1];
         } else {
-            // FIXME
-            throw new UnsupportedOperationException("Determinant of matrices larger than 3x3 not yet implemented");
+            // For matrices larger than 3x3, we do Gaussian elimination with partial pivots, keeping track of sign
+            // changes, then take the product of entries on the diagonal
+
+            // Make a copy of the matrix to work on
+            final double[][] temp = new double[mN][];
+            for (int i = 0; i < mN; ++i) {
+                temp[i] = this.m[i].clone();
+            }
+//            Log.fine(toString(temp));
+
+            boolean negate = false;
+            for (int col = 0; col < mN - 1; ++col) {
+                // Find the row with the greatest element magnitude in the current column, starting from the row
+                // corresponding to the current column
+                int maxRow = col;
+                double max = Math.abs(temp[col][col]);
+                for (int i = col + 1; i < mN; ++i) {
+                    final double v = Math.abs(temp[i][col]);
+                    if (v > max) {
+                        max = v;
+                        maxRow = i;
+                    }
+                }
+
+                // Swap rows if needed ("pivot")
+                if (maxRow != col) {
+                    final double[] x = temp[maxRow];
+                    temp[maxRow] = temp[col];
+                    temp[col] = x;
+                    negate = !negate;
+//                    Log.fine(toString(temp));
+                }
+
+                // Zero out entries in the column below the main diagonal
+                for (int rr = col + 1; rr < mN; ++rr) {
+                    if (temp[rr][col] != 0.0) {
+                        final double factor = -temp[rr][col] / temp[col][col];
+                        temp[rr][col] = 0.0;
+                        for (int cc = col + 1; cc < mN; ++cc) {
+                            temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
+                        }
+                    }
+                }
+//                Log.fine(toString(temp));
+            }
+
+            result = temp[0][0];
+            for (int i = 1; i < mN; ++i) {
+                result *= temp[i][i];
+            }
+            if (negate) {
+                result = -result;
+            }
         }
 
         return result;
@@ -338,8 +419,33 @@ public class SquareMatrix {
      */
     public final Optional<SquareMatrix> inverse() {
 
-        // FIXME
-        throw new UnsupportedOperationException("Matrix inverse not yet implemented");
+        Optional<SquareMatrix> result;
+
+        final int mN = n();
+
+        if (mN == 1) {
+            if (this.m[0][0] == 0.0) {
+                result = Optional.empty();
+            } else {
+                final double value = 1.0 / this.m[0][0];
+                result = Optional.of(new SquareMatrix(value));
+            }
+        } else if (mN == 2) {
+            final double adMinusBc = this.m[0][0] * this.m[1][1] - this.m[1][0] * this.m[0][1];
+
+            if (adMinusBc == 0.0) {
+                result = Optional.empty();
+            } else {
+                final double factor = 1.0 / adMinusBc;
+                result = Optional.of(new SquareMatrix(this.m[1][1] * factor, -this.m[0][1] * factor,
+                        -this.m[1][0] * factor, this.m[0][0] * factor));
+            }
+        } else {
+            // FIXME
+            throw new UnsupportedOperationException("Matrix inverse of 3x3 and higher not yet implemented");
+        }
+
+        return result;
     }
 
     /**
@@ -401,20 +507,34 @@ public class SquareMatrix {
      */
     public String toString() {
 
-        final int mN = n();
+        return toString(this.m);
+    }
+
+    /**
+     * Generates the string representation of the matrix.
+     *
+     * @param m the array of matrix entries
+     * @return the string representation
+     */
+    public static String toString(final double[][] m) {
+
+        final int mN = m.length;
 
         final HtmlBuilder builder = new HtmlBuilder(20 * mN * mN);
 
         builder.add('[');
         for (int r = 0; r < mN; ++r) {
+            if (r > 0) {
+                builder.addln().add(' ');
+            }
             builder.add('[');
             for (int c = 0; c < mN; ++c) {
                 if (c > 0) {
                     builder.add(", ");
                 }
-                builder.add(Double.toString(this.m[r][c]));
+                builder.add(Double.toString(m[r][c]));
             }
-            builder.addln(']');
+            builder.add(']');
         }
         builder.addln(']');
 
