@@ -1,5 +1,6 @@
 package dev.mathops.math.linalg;
 
+import dev.mathops.commons.log.Log;
 import dev.mathops.text.builder.HtmlBuilder;
 
 import java.util.Arrays;
@@ -47,6 +48,32 @@ public class SquareMatrix {
             for (int c = 0; c < n; ++c) {
                 this.m[r][c] = source.get(r, c);
             }
+        }
+    }
+
+    /**
+     * Constructs a square matrix with a specified list of values.
+     *
+     * @param values the array of values (must be a perfect square), in row-major order (row 0 from left to right, then
+     *               row 1 from left to right, etc.)
+     * @throws IllegalArgumentException if {@code values} is null or has a length that is not a perfect square of a
+     *                                  positive integer, or if any value is not a finite number
+     */
+    public SquareMatrix(final double[][] values) {
+
+        if (values == null) {
+            throw new IllegalArgumentException("Matrix elements array may not be null");
+        }
+        final int n = values.length;
+        for (final double[] value : values) {
+            if (value == null || value.length != n) {
+                throw new IllegalArgumentException("Matrix elements array had inconsistent rows");
+            }
+        }
+
+        this.m = new double[n][];
+        for (int i = 0; i < n; ++i) {
+            this.m[i] = values[i].clone();
         }
     }
 
@@ -328,66 +355,88 @@ public class SquareMatrix {
         } else if (mN == 2) {
             result = this.m[0][0] * this.m[1][1] - this.m[0][1] * this.m[1][0];
         } else if (mN == 3) {
-            result = this.m[0][0] * this.m[1][1] * this.m[2][2]
-                     + this.m[0][1] * this.m[1][2] * this.m[2][0]
-                     + this.m[0][2] * this.m[1][0] * this.m[2][1]
-                     - this.m[0][2] * this.m[1][1] * this.m[2][0]
-                     - this.m[0][1] * this.m[1][0] * this.m[2][2]
-                     - this.m[0][0] * this.m[1][2] * this.m[2][1];
+            result = determinant3x3();
         } else {
-            // For matrices larger than 3x3, we do Gaussian elimination with partial pivots, keeping track of sign
-            // changes, then take the product of entries on the diagonal
+            result = generalDeterminant(mN);
+        }
 
-            // Make a copy of the matrix to work on
-            final double[][] temp = new double[mN][];
-            for (int i = 0; i < mN; ++i) {
-                temp[i] = this.m[i].clone();
+        return result;
+    }
+
+    /**
+     * Computes the determinant of the matrix when it is known to be 3x3.
+     *
+     * @return the determinant
+     */
+    private double determinant3x3() {
+        return this.m[0][0] * this.m[1][1] * this.m[2][2]
+               + this.m[0][1] * this.m[1][2] * this.m[2][0]
+               + this.m[0][2] * this.m[1][0] * this.m[2][1]
+               - this.m[0][2] * this.m[1][1] * this.m[2][0]
+               - this.m[0][1] * this.m[1][0] * this.m[2][2]
+               - this.m[0][0] * this.m[1][2] * this.m[2][1];
+    }
+
+    /**
+     * Computes the determinant of the matrix when it is known to be 4x4 or larger.
+     *
+     * <p>
+     * This method performs Gaussian elimination with partial pivots, keeping track of sign changes, then take the
+     * product of entries on the diagonal.
+     *
+     * @return the determinant
+     */
+    private double generalDeterminant(final int mN) {
+
+        // Make a copy of the matrix to work on
+        final double[][] temp = new double[mN][];
+        for (int i = 0; i < mN; ++i) {
+            temp[i] = this.m[i].clone();
+        }
+        // Log.fine(toString(temp));
+
+        boolean negate = false;
+        for (int col = 0; col < mN - 1; ++col) {
+            // Find the row with the greatest element magnitude in the current column, starting from the row
+            // corresponding to the current column
+            int maxRow = col;
+            double max = Math.abs(temp[col][col]);
+            for (int i = col + 1; i < mN; ++i) {
+                final double v = Math.abs(temp[i][col]);
+                if (v > max) {
+                    max = v;
+                    maxRow = i;
+                }
             }
-//            Log.fine(toString(temp));
 
-            boolean negate = false;
-            for (int col = 0; col < mN - 1; ++col) {
-                // Find the row with the greatest element magnitude in the current column, starting from the row
-                // corresponding to the current column
-                int maxRow = col;
-                double max = Math.abs(temp[col][col]);
-                for (int i = col + 1; i < mN; ++i) {
-                    final double v = Math.abs(temp[i][col]);
-                    if (v > max) {
-                        max = v;
-                        maxRow = i;
+            // Swap rows if needed ("pivot")
+            if (maxRow != col) {
+                final double[] x = temp[maxRow];
+                temp[maxRow] = temp[col];
+                temp[col] = x;
+                negate = !negate;
+                // Log.fine(toString(temp));
+            }
+
+            // Zero out entries in the column below the main diagonal
+            for (int rr = col + 1; rr < mN; ++rr) {
+                if (temp[rr][col] != 0.0) {
+                    final double factor = -temp[rr][col] / temp[col][col];
+                    temp[rr][col] = 0.0;
+                    for (int cc = col + 1; cc < mN; ++cc) {
+                        temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
                     }
                 }
-
-                // Swap rows if needed ("pivot")
-                if (maxRow != col) {
-                    final double[] x = temp[maxRow];
-                    temp[maxRow] = temp[col];
-                    temp[col] = x;
-                    negate = !negate;
-//                    Log.fine(toString(temp));
-                }
-
-                // Zero out entries in the column below the main diagonal
-                for (int rr = col + 1; rr < mN; ++rr) {
-                    if (temp[rr][col] != 0.0) {
-                        final double factor = -temp[rr][col] / temp[col][col];
-                        temp[rr][col] = 0.0;
-                        for (int cc = col + 1; cc < mN; ++cc) {
-                            temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
-                        }
-                    }
-                }
-//                Log.fine(toString(temp));
             }
+            // Log.fine(toString(temp));
+        }
 
-            result = temp[0][0];
-            for (int i = 1; i < mN; ++i) {
-                result *= temp[i][i];
-            }
-            if (negate) {
-                result = -result;
-            }
+        double result = temp[0][0];
+        for (int i = 1; i < mN; ++i) {
+            result *= temp[i][i];
+        }
+        if (negate) {
+            result = -result;
         }
 
         return result;
@@ -431,18 +480,162 @@ public class SquareMatrix {
                 result = Optional.of(new SquareMatrix(value));
             }
         } else if (mN == 2) {
-            final double adMinusBc = this.m[0][0] * this.m[1][1] - this.m[1][0] * this.m[0][1];
+            final double edt = this.m[0][0] * this.m[1][1] - this.m[1][0] * this.m[0][1];
 
-            if (adMinusBc == 0.0) {
+            if (edt == 0.0) {
                 result = Optional.empty();
             } else {
-                final double factor = 1.0 / adMinusBc;
-                result = Optional.of(new SquareMatrix(this.m[1][1] * factor, -this.m[0][1] * factor,
-                        -this.m[1][0] * factor, this.m[0][0] * factor));
+                final double factor = 1.0 / edt;
+                final SquareMatrix inv = new SquareMatrix(this.m[1][1] * factor, -this.m[0][1] * factor,
+                        -this.m[1][0] * factor, this.m[0][0] * factor);
+                result = Optional.of(inv);
             }
+        } else if (mN == 3) {
+            result = inverse3x3();
         } else {
-            // FIXME
-            throw new UnsupportedOperationException("Matrix inverse of 3x3 and higher not yet implemented");
+            result = generalInverse(mN);
+        }
+
+        return result;
+    }
+
+    /**
+     * Computes the inverse of the matrix when it is known to be 3x3.
+     *
+     * @return the inverse, if one exists
+     */
+    private Optional<SquareMatrix> inverse3x3() {
+
+        final double a = this.m[0][0];
+        final double b = this.m[0][1];
+        final double c = this.m[0][2];
+        final double d = this.m[1][0];
+        final double e = this.m[1][1];
+        final double f = this.m[1][2];
+        final double g = this.m[2][0];
+        final double h = this.m[2][1];
+        final double i = this.m[2][2];
+
+        Optional<SquareMatrix> result;
+
+        final double det = a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+        if (det == 0.0) {
+            result = Optional.empty();
+        } else {
+            final double factor = 1.0 / det;
+            final SquareMatrix inv = new SquareMatrix(
+                    (e * i - f * h) * factor, (c * h - b * i) * factor, (b * f - c * e) * factor,
+                    (f * g - d * i) * factor, (a * i - c * g) * factor, (c * d - a * f) * factor,
+                    (d * h - e * g) * factor, (b * g - a * h) * factor, (a * e - b * d) * factor);
+            result = Optional.of(inv);
+        }
+
+        return result;
+    }
+
+    /**
+     * Computes the inverse of the matrix when it is known to be 4x4 or larger.
+     *
+     * <p>
+     * This method performs full Gauss-Jordan elimination with partial pivots with an adjoined identity matrix.
+     *
+     * @return the inverse, if one exists
+     */
+    private Optional<SquareMatrix> generalInverse(final int mN) {
+
+        // Make a copy of the matrix to work on, and an identity matrix to start from
+        final double[][] temp = new double[mN][];
+        final double[][] inv = new double[mN][mN];
+        for (int i = 0; i < mN; ++i) {
+            temp[i] = this.m[i].clone();
+            inv[i][i] = 1.0;
+        }
+
+        // We do Gaussian elimination first, getting the matrix to upper-triangular form first, so we can calculate
+        // the determinant and see if the matrix is singular.  We don't keep track of sign changes in the determinant
+        // since they are not relevant.
+        for (int col = 0; col < mN - 1; ++col) {
+            // Find the row with the greatest element magnitude in the current column, starting from the row
+            // corresponding to the current column
+            int maxRow = col;
+            double max = Math.abs(temp[col][col]);
+            for (int i = col + 1; i < mN; ++i) {
+                final double v = Math.abs(temp[i][col]);
+                if (v > max) {
+                    max = v;
+                    maxRow = i;
+                }
+            }
+
+            // Swap rows if needed ("pivot")
+            if (maxRow != col) {
+                final double[] x = temp[maxRow];
+                temp[maxRow] = temp[col];
+                temp[col] = x;
+                final double[] y = inv[maxRow];
+                inv[maxRow] = inv[col];
+                inv[col] = y;
+            }
+
+            // Zero out entries in the column below the main diagonal
+            if (temp[col][col] != 0.0) {
+                for (int rr = col + 1; rr < mN; ++rr) {
+                    if (temp[rr][col] != 0.0) {
+                        final double factor = -temp[rr][col] / temp[col][col];
+                        temp[rr][col] = 0.0;
+                        for (int cc = col + 1; cc < mN; ++cc) {
+                            temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
+                        }
+                        for (int cc = 0; cc < mN; ++cc) {
+                            final double top = inv[col][cc];
+                            final double entry = inv[rr][cc];
+                            inv[rr][cc] = Math.fma(factor, top, entry);
+                        }
+                    }
+                }
+            }
+//            Log.fine(toString(temp));
+//            Log.fine(inv);
+        }
+        Log.fine(toString(temp));
+        Log.fine(inv);
+
+        double det = temp[0][0];
+        for (int i = 1; i < mN; ++i) {
+            det *= temp[i][i];
+        }
+
+        Optional<SquareMatrix> result;
+
+        if (det == 0) {
+            result = Optional.empty();
+        } else {
+            // Matrix is not singular - continue to find its inverse (Note: this means none of the entries on the main
+            // diagonal are zero, so we need not check for that condition
+
+            for (int col = 1; col < mN; ++col) {
+                for (int rr = 0; rr < col; ++rr) {
+                    final double factor = -temp[rr][col] / temp[col][col];
+
+                    // NOTE: No need to actually update the "temp" matrix at this point.
+                    for (int cc = 0; cc < mN; ++cc) {
+                        final double diag = inv[col][cc];
+                        final double entry = inv[rr][cc];
+                        inv[rr][cc] = Math.fma(factor, diag, entry);
+                    }
+                }
+
+                // Get the main diagonal entry down to 1.0;
+                final double factor = 1.0 / temp[col][col];
+
+                for (int cc = 0; cc < mN; ++cc) {
+                    inv[col][cc] *= factor;
+                }
+
+                Log.fine(inv);
+            }
+
+            result = Optional.of(new SquareMatrix(inv));
         }
 
         return result;
