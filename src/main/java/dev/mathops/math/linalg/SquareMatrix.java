@@ -550,10 +550,11 @@ public class SquareMatrix {
             temp[i] = this.m[i].clone();
             inv[i][i] = 1.0;
         }
+        Log.fine("Start");
+        Log.fine(toString(temp), toString(inv));
 
-        // We do Gaussian elimination first, getting the matrix to upper-triangular form first, so we can calculate
-        // the determinant and see if the matrix is singular.  We don't keep track of sign changes in the determinant
-        // since they are not relevant.
+        // We do Gaussian elimination first, getting the matrix to upper-triangular form, so we can calculate the
+        // determinant and see if the matrix is singular.
         for (int col = 0; col < mN - 1; ++col) {
             // Find the row with the greatest element magnitude in the current column, starting from the row
             // corresponding to the current column
@@ -575,39 +576,43 @@ public class SquareMatrix {
                 final double[] y = inv[maxRow];
                 inv[maxRow] = inv[col];
                 inv[col] = y;
+
+                Log.fine("Swap " + maxRow + ", " + col);
+                Log.fine(toString(temp), toString(inv));
             }
 
             // Zero out entries in the column below the main diagonal
-            if (temp[col][col] != 0.0) {
-                for (int rr = col + 1; rr < mN; ++rr) {
-                    if (temp[rr][col] != 0.0) {
-                        final double factor = -temp[rr][col] / temp[col][col];
-                        temp[rr][col] = 0.0;
-                        for (int cc = col + 1; cc < mN; ++cc) {
-                            temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
-                        }
-                        for (int cc = 0; cc < mN; ++cc) {
-                            final double top = inv[col][cc];
-                            final double entry = inv[rr][cc];
-                            inv[rr][cc] = Math.fma(factor, top, entry);
-                        }
+            if (temp[col][col] == 0.0) {
+                // Determinant will be zero
+                break;
+            }
+
+            for (int rr = col + 1; rr < mN; ++rr) {
+                if (temp[rr][col] != 0.0) {
+                    final double factor = -temp[rr][col] / temp[col][col];
+                    temp[rr][col] = 0.0;
+                    for (int cc = col + 1; cc < mN; ++cc) {
+                        temp[rr][cc] = Math.fma(factor, temp[col][cc], temp[rr][cc]);
+                    }
+                    for (int cc = 0; cc < mN; ++cc) {
+                        final double top = inv[col][cc];
+                        final double entry = inv[rr][cc];
+                        inv[rr][cc] = Math.fma(factor, top, entry);
                     }
                 }
             }
-//            Log.fine(toString(temp));
-//            Log.fine(inv);
+            Log.fine("Zeroed out column " + col);
+            Log.fine(toString(temp), toString(inv));
         }
-        Log.fine(toString(temp));
-        Log.fine(inv);
 
         double det = temp[0][0];
         for (int i = 1; i < mN; ++i) {
             det *= temp[i][i];
         }
 
-        Optional<SquareMatrix> result;
+        final Optional<SquareMatrix> result;
 
-        if (det == 0) {
+        if (det == 0.0) {
             result = Optional.empty();
         } else {
             // Matrix is not singular - continue to find its inverse (Note: this means none of the entries on the main
@@ -617,7 +622,13 @@ public class SquareMatrix {
                 for (int rr = 0; rr < col; ++rr) {
                     final double factor = -temp[rr][col] / temp[col][col];
 
-                    // NOTE: No need to actually update the "temp" matrix at this point.
+                    // NOTE: No need to actually update the "temp" matrix at this point, but we do so for debugging
+                    temp[col][rr] = 0.0;
+                    for (int cc = 0; cc < mN; ++cc) {
+                        final double diag = temp[col][cc];
+                        final double entry = temp[rr][cc];
+                        temp[rr][cc] = Math.fma(factor, diag, entry);
+                    }
                     for (int cc = 0; cc < mN; ++cc) {
                         final double diag = inv[col][cc];
                         final double entry = inv[rr][cc];
@@ -632,10 +643,14 @@ public class SquareMatrix {
                     inv[col][cc] *= factor;
                 }
 
-                Log.fine(inv);
+                Log.fine(toString(temp), toString(inv));
             }
 
-            result = Optional.of(new SquareMatrix(inv));
+            final SquareMatrix inverse = new SquareMatrix(inv);
+            final SquareMatrix verify = product(inverse);
+            Log.info(verify);
+
+            result = Optional.of(inverse);
         }
 
         return result;
@@ -706,26 +721,40 @@ public class SquareMatrix {
     /**
      * Generates the string representation of the matrix.
      *
-     * @param m the array of matrix entries
+     * @param entries the array of matrix entries
      * @return the string representation
      */
-    public static String toString(final double[][] m) {
+    public static String toString(final double[][] entries) {
 
-        final int mN = m.length;
+        final int mN = entries.length;
+
+        // compute column widths so we can align entries
+        final int[] colWidths = new int[mN];
+        for (int row = 0; row < mN; ++row) {
+            for (int col = 0; col < mN; ++col) {
+                final String s = Double.toString(entries[row][col]);
+                final int len = s.length();
+                if (len > colWidths[col]) {
+                    colWidths[col] = len;
+                }
+            }
+        }
 
         final HtmlBuilder builder = new HtmlBuilder(20 * mN * mN);
 
         builder.add('[');
-        for (int r = 0; r < mN; ++r) {
-            if (r > 0) {
+        for (int row = 0; row < mN; ++row) {
+            if (row > 0) {
                 builder.addln().add(' ');
             }
             builder.add('[');
-            for (int c = 0; c < mN; ++c) {
-                if (c > 0) {
+            for (int col = 0; col < mN; ++col) {
+                if (col > 0) {
                     builder.add(", ");
                 }
-                builder.add(Double.toString(m[r][c]));
+                final String s = Double.toString(entries[row][col]);
+                final String padded = HtmlBuilder.pad(s, colWidths[col]);
+                builder.add(padded);
             }
             builder.add(']');
         }
