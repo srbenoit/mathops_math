@@ -550,8 +550,8 @@ public class SquareMatrix {
             temp[i] = this.m[i].clone();
             inv[i][i] = 1.0;
         }
-        Log.fine("Start");
-        Log.fine(toString(temp), toString(inv));
+//        Log.fine("Start");
+//        Log.fine(toString(temp), toString(inv));
 
         // We do Gaussian elimination first, getting the matrix to upper-triangular form, so we can calculate the
         // determinant and see if the matrix is singular.
@@ -576,9 +576,9 @@ public class SquareMatrix {
                 final double[] y = inv[maxRow];
                 inv[maxRow] = inv[col];
                 inv[col] = y;
-
-                Log.fine("Swap " + maxRow + ", " + col);
-                Log.fine(toString(temp), toString(inv));
+//
+//                Log.fine("Swap " + maxRow + ", " + col);
+//                Log.fine(toString(temp), toString(inv));
             }
 
             // Zero out entries in the column below the main diagonal
@@ -601,8 +601,8 @@ public class SquareMatrix {
                     }
                 }
             }
-            Log.fine("Zeroed out column " + col);
-            Log.fine(toString(temp), toString(inv));
+//            Log.fine("Zeroed out column " + col);
+//            Log.fine(toString(temp), toString(inv));
         }
 
         double det = temp[0][0];
@@ -618,37 +618,43 @@ public class SquareMatrix {
             // Matrix is not singular - continue to find its inverse (Note: this means none of the entries on the main
             // diagonal are zero, so we need not check for that condition
 
-            for (int col = 1; col < mN; ++col) {
-                for (int rr = 0; rr < col; ++rr) {
-                    final double factor = -temp[rr][col] / temp[col][col];
+            for (int row = 0; row < mN; ++row) {
+
+                // Scale the main diagonal entry to 1.0;
+                final double factor = 1.0 / temp[row][row];
+                temp[row][row] = 1.0;
+                for (int cc = row + 1; cc < mN; ++cc) {
+                    temp[row][cc] *= factor;
+                }
+                for (int cc = 0; cc < mN; ++cc) {
+                    inv[row][cc] *= factor;
+                }
+
+//                Log.fine("Scaled leading entry to 1.0 in column " + row);
+//                Log.fine(toString(temp), toString(inv));
+
+                for (int rr = 0; rr < row; ++rr) {
+                    final double factor2 = -temp[rr][row];
+                    temp[rr][row] = 0.0;
 
                     // NOTE: No need to actually update the "temp" matrix at this point, but we do so for debugging
-                    temp[col][rr] = 0.0;
-                    for (int cc = 0; cc < mN; ++cc) {
-                        final double diag = temp[col][cc];
+                    for (int cc = row + 1; cc < mN; ++cc) {
+                        final double diag = temp[row][cc];
                         final double entry = temp[rr][cc];
-                        temp[rr][cc] = Math.fma(factor, diag, entry);
+                        temp[rr][cc] = Math.fma(factor2, diag, entry);
                     }
                     for (int cc = 0; cc < mN; ++cc) {
-                        final double diag = inv[col][cc];
+                        final double diag = inv[row][cc];
                         final double entry = inv[rr][cc];
-                        inv[rr][cc] = Math.fma(factor, diag, entry);
+                        inv[rr][cc] = Math.fma(factor2, diag, entry);
                     }
                 }
 
-                // Get the main diagonal entry down to 1.0;
-                final double factor = 1.0 / temp[col][col];
-
-                for (int cc = 0; cc < mN; ++cc) {
-                    inv[col][cc] *= factor;
-                }
-
-                Log.fine(toString(temp), toString(inv));
+//                Log.fine("Zeroed above column " + row);
+//                Log.fine(toString(temp), toString(inv));
             }
 
             final SquareMatrix inverse = new SquareMatrix(inv);
-            final SquareMatrix verify = product(inverse);
-            Log.info(verify);
 
             result = Optional.of(inverse);
         }
